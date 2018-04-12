@@ -1,4 +1,8 @@
 .idea
+
+src/main/resources/private.conf
+refresh_token
+
 *.class
 *.log
 dist/*
@@ -33,3 +37,5 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+/src/main/resources/refresh_token.conf
+/src/main/resources/private.conf
