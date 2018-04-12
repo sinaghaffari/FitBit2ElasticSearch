@@ -143,6 +143,7 @@ object Main {
       .map(Json.parse)
       .map { json =>
         println(s"${DateTime.now()} - Refreshed Access Key")
+        println(s"\tResponse - \n ${Json.prettyPrint(json)}")
         println(s"\tRefresh Token - ${(json \ "refresh_token").as[String]}")
         println(s"\tAccess Token - ${(json \ "access_token").as[String]}")
         new PrintWriter(new File("refresh_token")) { try { write((json \ "refresh_token").as[String])} finally {close()}}
