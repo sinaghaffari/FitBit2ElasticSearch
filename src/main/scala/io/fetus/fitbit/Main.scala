@@ -31,14 +31,13 @@ object Main {
   def main(args: Array[String]): Unit = {
     val client_id = config.getString("fitbit.client_id")
     val client_secret = config.getString("fitbit.client_secret")
-    val refresh_token = io.Source.fromFile("refresh_token").mkString
     println(s"${DateTime.now} - Started")
     println(s"\tClient Id - $client_id")
     println(s"\tClient Secret - $client_secret")
     println(s"\tRefresh Token - $refresh_token")
     for {
-      _ <- getHistoricalData(refresh_token, client_id, client_secret)
-      _ <- getContinuousData(refresh_token, client_id, client_secret)
+      _ <- getHistoricalData(client_id, client_secret)
+      _ <- getContinuousData(client_id, client_secret)
     } yield ()
 
   }
@@ -46,7 +45,7 @@ object Main {
   def getContinuousData(refresh_token: String, client_id: String, client_secret: String): Future[Done] = {
     println(s"${DateTime.now} - Getting Continuous Data")
     Source
-      .repeat(refreshAccessKey(refresh_token, client_id, client_secret))
+      .repeat(refreshAccessKey(client_id, client_secret))
       .mapAsync(1)(x => x)
       .flatMapConcat { access_token =>
         val date = DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd"))
@@ -85,10 +84,10 @@ object Main {
       }
   }
 
-  def getHistoricalData(refresh_token: String, client_id: String, client_secret: String): Future[Done] = {
+  def getHistoricalData(client_id: String, client_secret: String): Future[Done] = {
     println(s"${DateTime.now} - Getting Historical Data")
     Source
-      .repeat(refreshAccessKey(refresh_token, client_id, client_secret))
+      .repeat(refreshAccessKey(client_id, client_secret))
       .mapAsync(1)(x => x)
       .flatMapConcat { access_token =>
         Source(Stream.from(0))
@@ -130,14 +129,15 @@ object Main {
       }
   }
 
-  def refreshAccessKey(refresh: String, client_id: String, client_secret: String): Future[String] = {
+  def refreshAccessKey(client_id: String, client_secret: String): Future[String] = {
     println(s"${DateTime.now()} - Refreshing Access Key")
+    val refresh_token = io.Source.fromFile("refresh_token").mkString.trim
     ws
       .url("https://api.fitbit.com/oauth2/token")
       .withAuth(client_id, client_secret, WSAuthScheme.BASIC)
       .post(Map(
         "grant_type" -> Seq("refresh_token"),
-        "refresh_token" -> Seq(refresh)
+        "refresh_token" -> Seq(refresh_token)
       ))
       .map(_.body)
       .map(Json.parse)
