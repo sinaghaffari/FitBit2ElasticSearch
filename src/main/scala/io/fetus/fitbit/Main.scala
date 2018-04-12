@@ -34,7 +34,6 @@ object Main {
     println(s"${DateTime.now} - Started")
     println(s"\tClient Id - $client_id")
     println(s"\tClient Secret - $client_secret")
-    println(s"\tRefresh Token - $refresh_token")
     for {
       _ <- getHistoricalData(client_id, client_secret)
       _ <- getContinuousData(client_id, client_secret)
@@ -42,7 +41,7 @@ object Main {
 
   }
 
-  def getContinuousData(refresh_token: String, client_id: String, client_secret: String): Future[Done] = {
+  def getContinuousData(client_id: String, client_secret: String): Future[Done] = {
     println(s"${DateTime.now} - Getting Continuous Data")
     Source
       .repeat(refreshAccessKey(client_id, client_secret))
