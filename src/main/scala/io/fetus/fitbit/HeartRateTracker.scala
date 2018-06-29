@@ -5,7 +5,7 @@ import akka.actor.{ActorContext, ActorSystem, Cancellable}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Keep, RunnableGraph, Sink, Source}
 import io.fetus.fitbit.HeartRateTracker._
-import org.joda.time.{DateTime, LocalDateTime, LocalTime}
+import org.joda.time.{DateTime, LocalDate, LocalDateTime, LocalTime}
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
@@ -39,10 +39,10 @@ class HeartRateTracker(auth: FitBitAuth, ws: StandaloneAhcWSClient)(implicit sys
     println(s"${LocalDateTime.now} - Starting Historical Heart Rate Tracking")
     Source(Stream.from(0))
       .map(LocalDateTime.now().minusDays)
+      .takeWhile(x => !x.toLocalDate.equals(LocalDate.parse("2018-04-08")))
       .map(x => {println(s"${LocalDateTime.now} - Getting Data From ${x.toLocalDate.toString}");x})
       .mapAsync(1)(generateRequest)
       .via(flow)
-      .takeWhile(_.nonEmpty)
       .toMat(sink)(Keep.right)
       .run()
   }
